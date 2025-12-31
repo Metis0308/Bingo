@@ -155,8 +155,10 @@ body.obs .board {
 <div class="editor" id="editor"></div>
 
 <div class="editor-controls">
+  <button onclick="addCategory()">＋ カテゴリ追加</button>
   <button onclick="applyTasks()">タスク反映（再生成）</button>
 </div>
+
 
 <script>
 /* =====================
@@ -170,7 +172,7 @@ if (isOBS) document.body.classList.add("obs");
    カテゴリ定義
 ===================== */
 let categories = {
-  A: ["追跡者を使用する", "守護者を使用する","レディを使用する","隠者を使用する", "鉄の目を使用する","無頼漢を使用する","執行者を使用する", "復讐者を使用する","学者を使用する","葬儀屋を使用する"],
+  Center: ["追跡者を使用する", "守護者を使用する","レディを使用する","隠者を使用する", "鉄の目を使用する","無頼漢を使用する","執行者を使用する", "復讐者を使用する","学者を使用する","葬儀屋を使用する"],
   B: ["敵を30体以上倒す","フィールドボスを3体以上倒す", "中央砦のボスを倒す","霊鷹の止まり木を使用する","霊脈を3か所使用する"],
   C: ["教会を1か所訪れる", "魔術師塔を1か所開放する", "封牢2か所もしくは災域を攻略する"],
   D: ["スカラベを1体倒す","埋もれた宝を1個開ける","遺跡を1か所攻略する"]}
@@ -179,6 +181,7 @@ const boardEl = document.getElementById("board");
 const bingoText = document.getElementById("bingoText");
 const editorEl = document.getElementById("editor");
 const sizeSelect = document.getElementById("sizeSelect");
+let centerCategoryKey = "Center";
 
 /* =====================
    ユーティリティ
@@ -211,15 +214,21 @@ function buildEditor() {
   if (!editorEl) return;
   editorEl.innerHTML = "";
 
-  for (const key in categories) {
+  Object.keys(categories).forEach(key => {
     const box = document.createElement("div");
+
     box.innerHTML = `
-      <h3>カテゴリ ${key}</h3>
+      <h3>
+        ${key}
+        ${key === centerCategoryKey ? "⭐(中央)" : ""}
+      </h3>
       <textarea id="cat_${key}">${categories[key].join("\n")}</textarea>
     `;
+
     editorEl.appendChild(box);
-  }
+  });
 }
+
 
 /* =====================
    ビンゴ生成
@@ -397,11 +406,11 @@ function updateURL() {
    タスク反映
 ===================== */
 function applyTasks() {
-  for (const key in categories) {
+  Object.keys(categories).forEach(key => {
     const ta = document.getElementById(`cat_${key}`);
-    if (!ta) continue;
+    if (!ta) return;
     categories[key] = ta.value.split("\n").filter(Boolean);
-  }
+  });
   generateBoard();
 }
 
@@ -422,10 +431,32 @@ if (params.has("data")) {
 } else {
   generateBoard();
 }
+
+function addCategory() {
+  let name = prompt("カテゴリ名を入力してください");
+
+  if (!name) return;
+
+  name = name.trim();
+
+  if (categories[name]) {
+    alert("同名カテゴリが既に存在します");
+    return;
+  }
+
+  categories[name] = [];
+  buildEditor();
+  updateURL();
+}
+
+
+
+  
 </script>
 
 </body>
 </html>
+
 
 
 
