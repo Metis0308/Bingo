@@ -56,9 +56,9 @@ const state = {
     "復讐者を使用する","学者を使用する","葬儀屋を使用する"
   ],
   categories: {
-    B: ["敵を30体以上倒す","フィールドボスを3体以上倒す","中央砦のボスを倒す","霊鷹の止まり木を使用する","霊脈を3か所使用する"],
-    C: ["教会を1か所訪れる","魔術師塔を1か所開放する","封牢2か所もしくは災域を攻略する"],
-    D: ["スカラベを1体倒す","埋もれた宝を1個開ける","遺跡を1か所攻略する"]
+    1: ["敵を30体以上倒す","フィールドボスを3体以上倒す","中央砦のボスを倒す","霊鷹の止まり木を使用する","霊脈を3か所使用する"],
+    2: ["教会を1か所訪れる","魔術師塔を1か所開放する","封牢2か所もしくは災域を攻略する"],
+    3: ["スカラベを1体倒す","埋もれた宝を1個開ける","遺跡を1か所攻略する"]
   }
 };
 
@@ -82,12 +82,11 @@ function init() {
     try {
       const restored = decode(params.get("data"));
 
-      // categories はマージ
-      if (restored.categories && typeof restored.categories === "object") {
-        Object.entries(restored.categories).forEach(([key, value]) => {
-          state.categories[key] = Array.isArray(value) ? value : [];
-        });
-      }
+if (restored.categories && typeof restored.categories === "object") {
+  // ★ 完全に置き換える（空配列も保持）
+  state.categories = structuredClone(restored.categories);
+}
+
 
       // centerTasks
       if (Array.isArray(restored.centerTasks)) {
@@ -268,6 +267,7 @@ init();
 
 </body>
 </html>
+
 
 
 
