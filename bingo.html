@@ -171,8 +171,9 @@ if (isOBS) document.body.classList.add("obs");
 /* =====================
    カテゴリ定義
 ===================== */
+let centerTasks = ["追跡者を使用する", "守護者を使用する","レディを使用する","隠者を使用する", "鉄の目を使用する","無頼漢を使用する","執行者を使用する", "復讐者を使用する","学者を使用する","葬儀屋を使用する"]
+;
 let categories = {
-  Center: ["追跡者を使用する", "守護者を使用する","レディを使用する","隠者を使用する", "鉄の目を使用する","無頼漢を使用する","執行者を使用する", "復讐者を使用する","学者を使用する","葬儀屋を使用する"],
   B: ["敵を30体以上倒す","フィールドボスを3体以上倒す", "中央砦のボスを倒す","霊鷹の止まり木を使用する","霊脈を3か所使用する"],
   C: ["教会を1か所訪れる", "魔術師塔を1か所開放する", "封牢2か所もしくは災域を攻略する"],
   D: ["スカラベを1体倒す","埋もれた宝を1個開ける","遺跡を1か所攻略する"]}
@@ -214,17 +215,21 @@ function buildEditor() {
   if (!editorEl) return;
   editorEl.innerHTML = "";
 
+  // センター専用
+  const centerBox = document.createElement("div");
+  centerBox.innerHTML = `
+    <h3>⭐ センター専用</h3>
+    <textarea id="center_tasks">${centerTasks.join("\n")}</textarea>
+  `;
+  editorEl.appendChild(centerBox);
+
+  // 通常カテゴリ
   Object.keys(categories).forEach(key => {
     const box = document.createElement("div");
-
     box.innerHTML = `
-      <h3>
-        ${key}
-        ${key === centerCategoryKey ? "⭐(中央)" : ""}
-      </h3>
+      <h3>${key}</h3>
       <textarea id="cat_${key}">${categories[key].join("\n")}</textarea>
     `;
-
     editorEl.appendChild(box);
   });
 }
@@ -244,64 +249,16 @@ function generateBoard(fromData = null) {
 
   const result = new Array(total).fill(null);
 
-  // 中央マス（カテゴリA優先）
-  const centerTask = getTaskFromCategory("A");
-  result[center] = centerTask;
+// 中央
+const centerTask =
+  centerTasks.length > 0
+    ? centerTasks[Math.floor(Math.random() * centerTasks.length)]
+    : "FREE";
+result[center] = centerTask;
 
-  // 重複排除済みプール
-  let pool = buildUniqueTaskPool([centerTask]);
+// 通常マス用（センター完全除外）
+let pool = buildUniqueTaskPool();
 
-  // シャッフル
-  pool = pool.sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < total; i++) {
-    if (i === center) continue;
-
-    if (pool.length > 0) {
-      result[i] = pool.shift();
-    } else {
-      result[i] = "FREE";
-    }
-  }
-
-  result.forEach((task, i) => {
-    const cell = document.createElement("div");
-    cell.className = "cell";
-    cell.textContent = task;
-
-    if (fromData?.checked?.includes(i)) {
-      cell.classList.add("checked");
-    }
-
-    cell.onclick = () => {
-      cell.classList.toggle("checked");
-      checkBingo(size);
-      updateURL();
-    };
-
-    boardEl.appendChild(cell);
-  });
-
-  checkBingo(size);
-  updateURL();
-}
-function generateBoard(fromData = null) {
-  const size = fromData?.size ?? Number(sizeSelect.value);
-  boardEl.innerHTML = "";
-  bingoText.textContent = "";
-  boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
-
-  const total = size * size;
-  const center = Math.floor(total / 2);
-
-  const result = new Array(total).fill(null);
-
-  // 中央マス（カテゴリA優先）
-  const centerTask = getTaskFromCategory("A");
-  result[center] = centerTask;
-
-  // 重複排除済みプール
-  let pool = buildUniqueTaskPool([centerTask]);
 
   // シャッフル
   pool = pool.sort(() => Math.random() - 0.5);
@@ -337,21 +294,17 @@ function generateBoard(fromData = null) {
   checkBingo(size);
   updateURL();
 }
-function buildUniqueTaskPool(exclude = []) {
+  
+function buildUniqueTaskPool() {
   const set = new Set();
 
-  Object.entries(categories).forEach(([key, list]) => {
-    if (key === "A") return; // ← 重要：Aは除外
-
-    list.forEach(task => {
-      if (!exclude.includes(task)) {
-        set.add(task);
-      }
-    });
+  Object.values(categories).forEach(list => {
+    list.forEach(task => set.add(task));
   });
 
   return Array.from(set);
 }
+
 
 
 /* =====================
@@ -406,13 +359,20 @@ function updateURL() {
    タスク反映
 ===================== */
 function applyTasks() {
+  const centerTA = document.getElementById("center_tasks");
+  if (centerTA) {
+    centerTasks = centerTA.value.split("\n").filter(Boolean);
+  }
+
   Object.keys(categories).forEach(key => {
     const ta = document.getElementById(`cat_${key}`);
     if (!ta) return;
     categories[key] = ta.value.split("\n").filter(Boolean);
   });
+
   generateBoard();
 }
+
 
 /* =====================
    初期化
@@ -456,6 +416,7 @@ function addCategory() {
 
 </body>
 </html>
+
 
 
 
