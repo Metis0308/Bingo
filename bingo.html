@@ -3,13 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <title>ナイトレインビンゴ</title>
-<style>
-:root {
-  --btn-grad: linear-gradient(135deg, #4facfe, #00f2fe);
-  --btn-glow: 0 0 12px #4facfe;
-}
-</style>
-
+<style> :root { --btn-grad: linear-gradient(135deg, #4facfe, #00f2fe); --btn-glow: 0 0 12px #4facfe; } body { font-family: "Segoe UI", sans-serif; background: radial-gradient(circle at top, #2b2b40, #111); color: #fff; padding: 20px; } h1 { text-shadow: 0 0 10px #6cf; } /* ===== ボタン ===== */ button { background: var(--btn-grad); border: none; border-radius: 20px; padding: 8px 18px; color: #000; font-weight: bold; cursor: pointer; box-shadow: var(--btn-glow); transition: 0.2s; } button:hover { transform: translateY(-2px); box-shadow: 0 0 20px #6cf; } button:active { transform: translateY(1px); box-shadow: 0 0 6px #6cf inset; } select { background: #111; color: #fff; border: 1px solid #555; padding: 6px; } /* ===== ビンゴ盤 ===== */ .board { display: grid; gap: 8px; max-width: 650px; margin-top: 15px; } .cell { background: linear-gradient(145deg, #ffffff25, #00000055); border: 2px solid #888; border-radius: 12px; padding: 10px; min-height: 85px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; box-shadow: inset 0 0 10px #000; } .cell.checked { background: linear-gradient(145deg, #3cff6a, #1f8f3f); color: #000; box-shadow: 0 0 14px #3cff6a; } .cell.bingo-line { border-color: gold; box-shadow: 0 0 20px gold; } .bingo { font-size: 26px; margin-top: 10px; color: gold; text-shadow: 0 0 12px gold; } /* ===== エディタ ===== */ .editor { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 25px; } .editor textarea { width: 100%; height: 140px; background: #0d0d14; color: #fff; border: 1px solid #555; border-radius: 8px; padding: 8px; } .editor-controls { margin-top: 10px; } /* ===== OBS ===== */ body.obs { background: transparent; } body.obs h1, body.obs .controls, body.obs .editor, body.obs .editor-controls { display: none; } body.obs .board { margin-top: 0; max-width: 100%; } </style>
 </head>
 
 <body>
@@ -259,4 +253,5 @@ init();
 
 </body>
 </html>
+
 
