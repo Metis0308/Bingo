@@ -328,6 +328,21 @@ function generateBoard(fromData = null) {
   checkBingo(size);
   updateURL();
 }
+function buildUniqueTaskPool(exclude = []) {
+  const set = new Set();
+
+  Object.entries(categories).forEach(([key, list]) => {
+    if (key === "A") return; // ← 重要：Aは除外
+
+    list.forEach(task => {
+      if (!exclude.includes(task)) {
+        set.add(task);
+      }
+    });
+  });
+
+  return Array.from(set);
+}
 
 
 /* =====================
@@ -411,5 +426,6 @@ if (params.has("data")) {
 
 </body>
 </html>
+
 
 
