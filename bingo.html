@@ -389,9 +389,6 @@ function applyTasks() {
    初期化
 ===================== */
 buildEditor();
-let categories = {};
-let centerTasks = [];
-
 if (params.has("data")) {
   try {
     const restored = decode(params.get("data"));
@@ -455,6 +452,7 @@ function toggleOBS() {
 
 </body>
 </html>
+
 
 
 
