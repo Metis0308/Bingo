@@ -338,9 +338,11 @@ function checkBingo(size) {
 ===================== */
 function updateURL() {
   const cells = [...document.querySelectorAll(".cell")];
+
   const data = {
     size: Number(sizeSelect.value),
     categories,
+    centerTasks,
     board: cells.map(c => c.textContent),
     checked: cells
       .map((c, i) => (c.classList.contains("checked") ? i : null))
@@ -348,12 +350,9 @@ function updateURL() {
   };
 
   const encoded = encode(data);
-  history.replaceState(
-    null,
-    "",
-    `?data=${encoded}${isOBS ? "&obs=1" : ""}`
-  );
+  history.replaceState(null, "", `?data=${encoded}${isOBS ? "&obs=1" : ""}`);
 }
+
 
 /* =====================
    タスク反映
@@ -378,24 +377,32 @@ function applyTasks() {
    初期化
 ===================== */
 buildEditor();
+let categories = {};
+let centerTasks = [];
 
 if (params.has("data")) {
   try {
     const restored = decode(params.get("data"));
-    categories = restored.categories;
-    buildEditor();
+    categories = restored.categories ?? {};
+    centerTasks = restored.centerTasks ?? [];
     generateBoard(restored);
+    buildEditor();
   } catch {
+    categories = { B: [], C: [] };
+    centerTasks = [];
     generateBoard();
+    buildEditor();
   }
 } else {
+  categories = { B: [], C: [] };
+  centerTasks = [];
   generateBoard();
+  buildEditor();
 }
 
 function addCategory() {
-  let name = prompt("カテゴリ名を入力してください");
-
-  if (!name) return;
+  const name = prompt("カテゴリ名");
+  if (!name || categories[name]) return;
 
   name = name.trim();
 
@@ -416,6 +423,7 @@ function addCategory() {
 
 </body>
 </html>
+
 
 
 
