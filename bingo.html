@@ -227,53 +227,106 @@ function buildEditor() {
 function generateBoard(fromData = null) {
   const size = fromData?.size ?? Number(sizeSelect.value);
   boardEl.innerHTML = "";
-  boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
   bingoText.textContent = "";
+  boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
 
   const total = size * size;
   const center = Math.floor(total / 2);
 
-  // ① 全タスク候補を一つの配列に
-  const allTasks = Object.values(categories).flat();
-
-  // ② 結果配列
   const result = new Array(total).fill(null);
 
-  // ③ センター先に決定
-  result[center] = getTaskFromCategory("A"); // カテゴリ A から
+  // 中央マス（カテゴリA優先）
+  const centerTask = getTaskFromCategory("A");
+  result[center] = centerTask;
 
-  // ④ 残り用の候補プール（重複なし）
-  let pool = allTasks.filter(t => t !== result[center]);
+  // 重複排除済みプール
+  let pool = buildUniqueTaskPool([centerTask]);
 
-  // ⑤ 残りマスにランダム割当
+  // シャッフル
+  pool = pool.sort(() => Math.random() - 0.5);
+
   for (let i = 0; i < total; i++) {
     if (i === center) continue;
 
     if (pool.length > 0) {
-      const idx = Math.floor(Math.random() * pool.length);
-      result[i] = pool[idx];
-      pool.splice(idx, 1);
+      result[i] = pool.shift();
     } else {
-      result[i] = "FREE"; // 足りなくなったら FREE
+      result[i] = "FREE";
     }
   }
 
-  // ⑥ 結果を DOM に反映
   result.forEach((task, i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
     cell.textContent = task;
 
+    if (fromData?.checked?.includes(i)) {
+      cell.classList.add("checked");
+    }
+
     cell.onclick = () => {
       cell.classList.toggle("checked");
       checkBingo(size);
-      updateURL(); // URL更新（共有用）
+      updateURL();
     };
+
     boardEl.appendChild(cell);
   });
 
   checkBingo(size);
-  updateURL(); // 生成後にも更新
+  updateURL();
+}
+function generateBoard(fromData = null) {
+  const size = fromData?.size ?? Number(sizeSelect.value);
+  boardEl.innerHTML = "";
+  bingoText.textContent = "";
+  boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+  const total = size * size;
+  const center = Math.floor(total / 2);
+
+  const result = new Array(total).fill(null);
+
+  // 中央マス（カテゴリA優先）
+  const centerTask = getTaskFromCategory("A");
+  result[center] = centerTask;
+
+  // 重複排除済みプール
+  let pool = buildUniqueTaskPool([centerTask]);
+
+  // シャッフル
+  pool = pool.sort(() => Math.random() - 0.5);
+
+  for (let i = 0; i < total; i++) {
+    if (i === center) continue;
+
+    if (pool.length > 0) {
+      result[i] = pool.shift();
+    } else {
+      result[i] = "FREE";
+    }
+  }
+
+  result.forEach((task, i) => {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.textContent = task;
+
+    if (fromData?.checked?.includes(i)) {
+      cell.classList.add("checked");
+    }
+
+    cell.onclick = () => {
+      cell.classList.toggle("checked");
+      checkBingo(size);
+      updateURL();
+    };
+
+    boardEl.appendChild(cell);
+  });
+
+  checkBingo(size);
+  updateURL();
 }
 
 
@@ -358,4 +411,5 @@ if (params.has("data")) {
 
 </body>
 </html>
+
 
