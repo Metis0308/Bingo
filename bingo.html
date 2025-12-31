@@ -78,23 +78,30 @@ function init() {
   state.isOBS = params.has("obs");
   applyOBSState();
 
-  if (params.has("data")) {
-    try {
-      const restored = decode(params.get("data"));
-      state.categories = restored.categories ?? state.categories;
-      state.centerTasks = restored.centerTasks ?? state.centerTasks;
-      els.size.value = restored.size ?? els.size.value;
+ if (params.has("data")) {
+  try {
+    const restored = decode(params.get("data"));
 
-      buildEditor();
-      generateBoard(restored);
-      return;
-    } catch (e) {
-      console.error("復元失敗", e);
+    // ★ categories はマージする
+    if (restored.categories && typeof restored.categories === "object") {
+      Object.entries(restored.categories).forEach(([key, value]) => {
+        state.categories[key] = Array.isArray(value) ? value : [];
+      });
     }
-  }
 
-  buildEditor();
-  generateBoard();
+    // ★ centerTasks は配列丸ごとでOK
+    if (Array.isArray(restored.centerTasks)) {
+      state.centerTasks = restored.centerTasks;
+    }
+
+    els.size.value = restored.size ?? els.size.value;
+
+    buildEditor();
+    generateBoard(restored);
+    return;
+  } catch (e) {
+    console.error("復元失敗", e);
+  }
 }
 
 /* =====================
@@ -253,5 +260,6 @@ init();
 
 </body>
 </html>
+
 
 
