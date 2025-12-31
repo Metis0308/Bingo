@@ -143,6 +143,7 @@ body.obs .board {
     <option value="5" selected>5×5</option>
   </select>
   <button onclick="generateBoard()">生成</button>
+    <button id="obsToggleBtn" onclick="toggleOBS()">🎥 OBSモード</button>
 </div>
 
 <div id="board" class="board"></div>
@@ -164,10 +165,12 @@ body.obs .board {
 /* =====================
    OBS 判定
 ===================== */
+let isOBS = false;
 const params = new URLSearchParams(location.search);
-const isOBS = params.has("obs");
-if (isOBS) document.body.classList.add("obs");
+isOBS = params.has("obs");
+applyOBSState();
 
+  
 /* =====================
    カテゴリ定義
 ===================== */
@@ -247,32 +250,37 @@ function generateBoard(fromData = null) {
   const total = size * size;
   const center = Math.floor(total / 2);
 
-  const result = new Array(total).fill(null);
+  let result = [];
 
-// 中央
-const centerTask =
-  centerTasks.length > 0
-    ? centerTasks[Math.floor(Math.random() * centerTasks.length)]
-    : "FREE";
-result[center] = centerTask;
+  // ▼ 復元データが「完全にある」場合のみ使う
+  if (
+    fromData &&
+    Array.isArray(fromData.board) &&
+    fromData.board.length === total
+  ) {
+    result = fromData.board.slice();
+  } else {
+    // ▼ 通常生成ルート
+    const centerTask =
+      centerTasks.length > 0
+        ? centerTasks[Math.floor(Math.random() * centerTasks.length)]
+        : "FREE";
 
-// 通常マス用（センター完全除外）
-let pool = buildUniqueTaskPool();
+    result = new Array(total).fill("FREE");
+    result[center] = centerTask;
 
+    let pool = buildUniqueTaskPool();
+    pool = pool.sort(() => Math.random() - 0.5);
 
-  // シャッフル
-  pool = pool.sort(() => Math.random() - 0.5);
-
-  for (let i = 0; i < total; i++) {
-    if (i === center) continue;
-
-    if (pool.length > 0) {
-      result[i] = pool.shift();
-    } else {
-      result[i] = "FREE";
+    for (let i = 0; i < total; i++) {
+      if (i === center) continue;
+      if (pool.length > 0) {
+        result[i] = pool.shift();
+      }
     }
   }
 
+  // ▼ DOM反映
   result.forEach((task, i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
@@ -294,6 +302,7 @@ let pool = buildUniqueTaskPool();
   checkBingo(size);
   updateURL();
 }
+
   
 function buildUniqueTaskPool() {
   const set = new Set();
@@ -350,8 +359,11 @@ function updateURL() {
   };
 
   const encoded = encode(data);
-  history.replaceState(null, "", `?data=${encoded}${isOBS ? "&obs=1" : ""}`);
+
+  const obsParam = isOBS ? "&obs=1" : "";
+  history.replaceState(null, "", `?data=${encoded}${obsParam}`);
 }
+
 
 
 /* =====================
@@ -423,13 +435,27 @@ function addCategory() {
   updateURL();
 }
 
+function toggleOBS() {
+  isOBS = !isOBS;
+  applyOBSState();
+  updateURL();
+}
 
+  function applyOBSState() {
+  document.body.classList.toggle("obs", isOBS);
+
+  const btn = document.getElementById("obsToggleBtn");
+  if (btn) {
+    btn.textContent = isOBS ? "🎥 OBSモード：ON" : "🎥 OBSモード：OFF";
+  }
+}
 
   
 </script>
 
 </body>
 </html>
+
 
 
 
