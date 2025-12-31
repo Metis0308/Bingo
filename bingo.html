@@ -227,52 +227,55 @@ function buildEditor() {
 function generateBoard(fromData = null) {
   const size = fromData?.size ?? Number(sizeSelect.value);
   boardEl.innerHTML = "";
-  bingoText.textContent = "";
   boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+  bingoText.textContent = "";
 
   const total = size * size;
   const center = Math.floor(total / 2);
 
-  let tasks =
-    fromData?.board ??
-    (() => {
-      let pool = shuffle(
-        Object.keys(categories)
-          .filter(k => k !== "A")
-          .flatMap(k => categories[k])
-      );
+  // ① 全タスク候補を一つの配列に
+  const allTasks = Object.values(categories).flat();
 
-      while (pool.length < total && pool.length > 0) {
-        pool.push(...pool);
-      }
+  // ② 結果配列
+  const result = new Array(total).fill(null);
 
-      return Array.from({ length: total }, (_, i) =>
-        i === center ? getTaskFromCategory("A") : pool.pop() || "FREE"
-      );
-    })();
+  // ③ センター先に決定
+  result[center] = getTaskFromCategory("A"); // カテゴリ A から
 
-  tasks.forEach((text, i) => {
+  // ④ 残り用の候補プール（重複なし）
+  let pool = allTasks.filter(t => t !== result[center]);
+
+  // ⑤ 残りマスにランダム割当
+  for (let i = 0; i < total; i++) {
+    if (i === center) continue;
+
+    if (pool.length > 0) {
+      const idx = Math.floor(Math.random() * pool.length);
+      result[i] = pool[idx];
+      pool.splice(idx, 1);
+    } else {
+      result[i] = "FREE"; // 足りなくなったら FREE
+    }
+  }
+
+  // ⑥ 結果を DOM に反映
+  result.forEach((task, i) => {
     const cell = document.createElement("div");
     cell.className = "cell";
-    cell.textContent = text;
-
-    if (fromData?.checked?.includes(i)) {
-      cell.classList.add("checked");
-    }
+    cell.textContent = task;
 
     cell.onclick = () => {
       cell.classList.toggle("checked");
       checkBingo(size);
-      updateURL();
+      updateURL(); // URL更新（共有用）
     };
-
     boardEl.appendChild(cell);
   });
 
-  sizeSelect.value = size;
   checkBingo(size);
-  updateURL();
+  updateURL(); // 生成後にも更新
 }
+
 
 /* =====================
    ビンゴ判定
@@ -355,3 +358,4 @@ if (params.has("data")) {
 
 </body>
 </html>
+
